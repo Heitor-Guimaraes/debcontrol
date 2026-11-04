@@ -1,24 +1,13 @@
 @echo off
-setlocal EnableDelayedExpansion
+rem Testes locais: nao precisam do MySQL nem do driver.
+setlocal
 cd /d "%~dp0"
+chcp 65001 >nul
 
-if not exist build\classes mkdir build\classes
-if not exist build\test-classes mkdir build\test-classes
-
-(for /r src %%F in (*.java) do @(
-    set "arquivoFonte=%%F"
-    echo "!arquivoFonte:\=/!"
-)) > build\sources.txt
-javac -encoding UTF-8 -d build\classes @build\sources.txt
+call "%~dp0compilar.bat" --testes
 if errorlevel 1 exit /b 1
 
-(for /r test %%F in (*.java) do @(
-    set "arquivoFonte=%%F"
-    echo "!arquivoFonte:\=/!"
-)) > build\tests.txt
-javac -encoding UTF-8 -cp "build\classes" -d build\test-classes @build\tests.txt
-if errorlevel 1 exit /b 1
-
-java -cp "build\classes;build\test-classes" br.com.debcontrol.test.TestRunner
+java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp "build\classes;build\test-classes" br.com.debcontrol.test.TestRunner
+set "RESULTADO=%errorlevel%"
 pause
-endlocal
+exit /b %RESULTADO%

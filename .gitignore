@@ -10,3 +10,4 @@ exportacoes/
 /config/jdk.properties
 /config/database.properties
 /lib/*.jar
+*.class
