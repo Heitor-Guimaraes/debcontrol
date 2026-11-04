@@ -34,7 +34,7 @@ O banco utilizado é `mercado_fiado`.
 
 ## Adicionar o único JAR necessário
 
-1. Baixe o MySQL Connector/J no site oficial do MySQL.
+1. Baixe o MySQL Connector/J no site oficial do MySQL ou use o comando `curl` indicado no `README.md`.
 2. Coloque o arquivo na pasta `lib`.
 3. Renomeie para `mysql-connector-j.jar`.
 
@@ -45,7 +45,7 @@ O driver é necessário porque o JDBC pertence ao Java, mas o driver específico
 Edite `config/database.properties`:
 
 ```properties
-db.url=jdbc:mysql://localhost:3306/mercado_fiado?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+db.url=jdbc:mysql://localhost:3306/mercado_fiado?useSSL=false&allowPublicKeyRetrieval=true&connectTimeout=5000
 db.user=root
 db.password=SUA_SENHA
 ```
@@ -56,17 +56,17 @@ Também podem ser usadas as variáveis `FIADO_DB_URL`, `FIADO_DB_USER` e `FIADO_
 
 1. Use **File > Open Project**.
 2. Selecione a pasta `debcontrol`, e não um arquivo Java isolado.
-3. Cadastre o JDK 25 em **Tools > Java Platforms > Add Platform** e selecione-o em **Project Properties > Libraries > Java Platform**. Em **Sources**, confira o nível de código-fonte 25. Se essas opções não estiverem disponíveis, sua instalação do NetBeans precisa oferecer suporte a esse JDK.
+3. Cadastre o JDK 23 ou superior em **Tools > Java Platforms > Add Platform** e selecione-o em **Project Properties > Libraries > Java Platform**. Em **Sources**, confira o nível de código-fonte 23. Se essas opções não estiverem disponíveis, sua instalação do NetBeans precisa oferecer suporte a esse JDK.
 4. Se o driver aparecer quebrado, use **Project Properties > Libraries** e selecione `lib/mysql-connector-j.jar`.
 5. Execute com **Run Project**. A classe principal é `br.com.debcontrol.Main`.
 
-### Erro release version 25 not supported
+### Erro release version 23 not supported
 
-O compilador selecionado não suporta Java 25. Neste projeto, o Ant seleciona o JDK nesta ordem: `jdk.home` em `config/jdk.properties`, `JAVA_HOME`, Java que iniciou o Ant/NetBeans.
+O compilador selecionado é anterior ao Java 23. Neste projeto, o Ant seleciona o JDK nesta ordem: `jdk.home` em `config/jdk.properties`, `JAVA_HOME`, Java que iniciou o Ant/NetBeans.
 
-Abra `config/jdk.properties`, remova o comentário de `jdk.home` e informe o caminho real do seu JDK 25. Exemplo, somente se esse diretório existir: `jdk.home=C:/Program Files/Java/jdk-25`. Não inclua `/bin` e não use aspas. Execute **Clean and Build** e **Run**. A saída mostrará o JDK selecionado.
+Abra `config/jdk.properties`, remova o comentário de `jdk.home` e informe o caminho real do seu JDK 23 ou superior. Exemplo, somente se esse diretório existir: `jdk.home=C:/Program Files/Java/jdk-23`. Não inclua `/bin` e não use aspas. Execute **Clean and Build** e **Run**. A saída mostrará o JDK selecionado.
 
-Selecionar Java Platform nas propriedades da IDE, sozinho, não substitui a escolha explícita do JDK neste `build.xml` personalizado. Os arquivos `.bat` usam o compilador do PATH; para eles, configure PATH para o mesmo JDK 25.
+Selecionar Java Platform nas propriedades da IDE, sozinho, não substitui a escolha explícita do JDK neste `build.xml` personalizado. Os arquivos `.bat` usam o compilador do PATH; para eles, configure PATH para o mesmo JDK.
 
 ## Requisito da aba Design e dos arquivos `.form`
 
@@ -104,8 +104,8 @@ Swing + .form -> Service -> DAO/JDBC -> MySQL
 
 ## Regras principais
 
-1. CPF, telefone e nome do cliente são obrigatórios; CPF é único.
-2. Login do funcionário é único e sua senha é armazenada como SHA-256. Isso não implementa autenticação; o cadastro de funcionários não restringe a abertura do sistema.
+1. CPF, telefone e nome do cliente são obrigatórios; o CPF é único e seus dígitos verificadores são conferidos.
+2. Login do funcionário é único e sua senha é armazenada com PBKDF2 e sal. Isso não implementa autenticação; o cadastro de funcionários não restringe a abertura do sistema.
 3. Cliente, funcionário e forma de pagamento desativados não podem participar de novos registros.
 4. Venda deve ter valor positivo, descrição e vencimento entre a data da venda e um mês depois.
 5. Pagamento deve ser positivo, não pode estar no futuro nem ultrapassar o saldo da venda.
@@ -134,7 +134,7 @@ As barras de pesquisa usam azul suave, os formulários usam branco e as tabelas 
 
 ## Limites de validação
 
-A configuração de compilação foi alterada para Java 25 no NetBeans, no Ant e nos scripts de execução e teste. É necessário JDK 25 para compilar e executar esta entrega. A compilação e os testes anteriormente registrados foram feitos antes dessa alteração; esta entrega ainda precisa ser compilada e testada com JDK 25.
+A compilação usa Java 23 (`--release 23`) no NetBeans, no Ant e nos scripts; é necessário JDK 23 ou superior.
 
 O pacote pode ser compilado e os testes locais podem ser executados sem MySQL. Os testes não substituem a execução real dos cadastros e pagamentos com o banco configurado. A abertura na aba Design deve ser conferida na instalação do NetBeans do aluno.
 

@@ -36,4 +36,4 @@ Classes usam PascalCase; atributos e métodos, camelCase; constantes, MAIUSCULAS
 
 A janela principal respeita a área útil do monitor e a escala lógica informada pelo Java, com rolagem do menu e do conteúdo quando necessário. Os diálogos podem ser redimensionados e possuem rolagem. Layouts Swing são preservados nos arquivos .form; os adaptadores de rolagem e ajuste de janela ficam fora do código gerado.
 
-Foram adicionados testes de cálculo para áreas de notebook, desktop, escala e monitor à esquerda do principal. Esses testes não substituem a verificação visual real no Windows, no NetBeans e com JDK 25.
+Foram adicionados testes de cálculo para áreas de notebook, desktop, escala e monitor à esquerda do principal. Esses testes não substituem a verificação visual real no Windows e no NetBeans.

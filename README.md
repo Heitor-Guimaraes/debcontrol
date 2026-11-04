@@ -1,11 +1,48 @@
 # debcontrol
 
-Aplicação desktop configurada para Java 23 ou superior, Swing, JDBC e MySQL, sem frameworks.
+Aplicação desktop para controle de vendas fiadas: clientes, funcionários, formas de pagamento, vendas, pagamentos parciais, cobranças, dashboard e relatório de devedores.
 
-- Projeto Apache NetBeans com 16 telas editáveis na aba **Design** (`.java` + `.form`).
-- Banco com clientes, funcionários, formas de pagamento, vendas fiadas, pagamentos e cobranças.
-- Consulte `GUIA-DO-PROJETO.md` para instalar e executar.
-- Consulte `DIAGRAMA-DE-CLASSES.md` para o modelo Java relacionado ao banco.
-- Execute `terminal.bat` para testar conexão e CRUD no terminal; o roteiro está em [AULA12-TERMINAL.md](AULA12-TERMINAL.md).
-- Execute `testar-integracao.bat` para validar o CRUD com persistência no MySQL configurado.
-- Formulário técnico das etapas 1 a 3 e correções: [FORMULARIO-TECNICO.md](docs/aula12/FORMULARIO-TECNICO.md).
+Feita com **Java 23+, Swing, JDBC e MySQL**, sem frameworks. O único JAR externo é o driver MySQL Connector/J. As 16 telas podem ser editadas na aba **Design** do Apache NetBeans (`.java` + `.form`).
+
+## Como executar
+
+1. Instale o JDK 23 ou superior e um servidor MySQL 8 ou MariaDB.
+2. Baixe o driver e salve como `lib/mysql-connector-j.jar`. Ele não é versionado:
+   ```
+   curl -L -o lib/mysql-connector-j.jar https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/9.1.0/mysql-connector-j-9.1.0.jar
+   ```
+3. Execute `sql/banco_mercado_fiado.sql` para criar o banco. `sql/dados_demonstracao.sql` é opcional.
+4. Copie `config/database.properties.example` para `config/database.properties` e informe usuário e senha. Esse arquivo não é versionado. Também é possível usar as variáveis `FIADO_DB_URL`, `FIADO_DB_USER` e `FIADO_DB_PASSWORD`.
+5. Abra `ABRIR-DEBCONTROL.bat`, ou `terminal.bat` para o menu de CRUD no terminal.
+
+No NetBeans, use **File > Open Project** e selecione esta pasta. Detalhes em [GUIA-DO-PROJETO.md](GUIA-DO-PROJETO.md).
+
+## Testes
+
+| Script | O que valida | Precisa de banco |
+| --- | --- | --- |
+| `testar.bat` | Regras, validações, CSV, senhas e construção das telas | Não |
+| `testar-integracao.bat` | CRUD de cliente; grava e remove um registro temporário | Sim |
+| `testar-sistema.bat` | Fluxo financeiro completo em um banco temporário, removido ao final | Sim |
+| `testar-sistema.bat --gui` | O mesmo, acionando os botões reais das telas | Sim, e monitor |
+
+Os arquivos gerados pelos testes ficam em `build/test-output`. O CI executa `testar.bat` e o teste de sistema em cada push: [.github/workflows/ci.yml](.github/workflows/ci.yml).
+
+## Estrutura
+
+```text
+Swing / Terminal -> service (regras) -> dao (SQL/JDBC) -> MySQL
+```
+
+Pacotes e convenções em [ESTRUTURA-DO-PROJETO.md](ESTRUTURA-DO-PROJETO.md) e modelo em [DIAGRAMA-DE-CLASSES.md](DIAGRAMA-DE-CLASSES.md).
+
+## Documentos
+
+- [Análise do projeto e melhorias aplicadas](docs/ANALISE-E-MELHORIAS.md)
+- [Roteiro da Aula 11](AULA11-ENTREGA.md) e [da Aula 12](AULA12-TERMINAL.md)
+- [Formulário técnico](docs/aula12/FORMULARIO-TECNICO.md)
+- `docs/aula11` e `docs/aula12` guardam as evidências das entregas, como foram geradas em 28/10/2026.
+
+## Limitações conhecidas
+
+O cadastro de funcionários não implementa login: o sistema abre sem autenticação. A conexão padrão usa `useSSL=false` e é destinada apenas a um banco local. Outros pontos estão em [próximos passos](docs/ANALISE-E-MELHORIAS.md#próximos-passos-recomendados).
