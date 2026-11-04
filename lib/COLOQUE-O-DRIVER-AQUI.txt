@@ -1,0 +1,6 @@
+Baixe o MySQL Connector/J no site oficial do MySQL e coloque o arquivo JAR nesta pasta.
+
+Renomeie o arquivo para:
+mysql-connector-j.jar
+
+O driver JDBC é a única dependência externa necessária.

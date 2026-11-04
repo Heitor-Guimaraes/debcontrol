@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="debcontrol" default="run" basedir=".">
+    <property file="config/jdk.properties"/>
+    <property environment="env"/>
+    <condition property="jdk.home" value="${env.JAVA_HOME}">
+        <isset property="env.JAVA_HOME"/>
+    </condition>
+    <property name="jdk.home" value="${java.home}"/>
+    <condition property="java.exe.suffix" value=".exe" else="">
+        <os family="windows"/>
+    </condition>
+    <property name="jdk.javac" location="${jdk.home}/bin/javac${java.exe.suffix}"/>
+    <property name="jdk.java" location="${jdk.home}/bin/java${java.exe.suffix}"/>
+    <property name="src.dir" value="src"/>
+    <property name="test.dir" value="test"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="test.classes.dir" value="${build.dir}/test-classes"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="main.class" value="br.com.debcontrol.Main"/>
+
+    <path id="project.classpath">
+        <fileset dir="lib" includes="*.jar" erroronmissingdir="false"/>
+    </path>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="check-jdk">
+        <echo message="JDK escolhido: ${jdk.home}"/>
+        <available file="${jdk.javac}" property="jdk.compiler.exists"/>
+        <fail unless="jdk.compiler.exists" message="JDK nao encontrado. Configure jdk.home em config/jdk.properties apontando para a pasta do JDK 23 ou superior (sem /bin)."/>
+        <exec executable="${jdk.javac}" outputproperty="jdk.compiler.version" errorproperty="jdk.compiler.error" resultproperty="jdk.compiler.result">
+            <arg value="-version"/>
+        </exec>
+        <condition property="jdk.version.ok">
+            <and>
+                <equals arg1="${jdk.compiler.result}" arg2="0"/>
+                <matches string="${jdk.compiler.version}" pattern="^javac (2[3-9]|[3-9][0-9]|[1-9][0-9]{2,})([. +\-].*)?$"/>
+            </and>
+        </condition>
+        <fail unless="jdk.version.ok" message="Este projeto exige JDK 23 ou superior. Compilador encontrado: ${jdk.compiler.version} ${jdk.compiler.error}. Configure jdk.home em config/jdk.properties."/>
+    </target>
+
+    <target name="compile" depends="check-jdk">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" encoding="UTF-8"
+               release="23" fork="true" executable="${jdk.javac}" includeantruntime="false">
+            <classpath refid="project.classpath"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.dir}/debcontrol.jar" basedir="${classes.dir}">
+            <manifest><attribute name="Main-Class" value="${main.class}"/></manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="compile">
+        <java classname="${main.class}" fork="true" jvm="${jdk.java}" failonerror="true" dir="${basedir}">
+            <classpath><pathelement location="${classes.dir}"/><path refid="project.classpath"/></classpath>
+        </java>
+    </target>
+
+    <target name="terminal" depends="compile">
+        <java classname="br.com.debcontrol.ui.terminal.TerminalApp" fork="true" jvm="${jdk.java}" dir="${basedir}" failonerror="true">
+            <classpath><pathelement location="${classes.dir}"/><path refid="project.classpath"/></classpath>
+        </java>
+    </target>
+
+    <target name="test" depends="compile">
+        <mkdir dir="${test.classes.dir}"/>
+        <javac srcdir="${test.dir}" destdir="${test.classes.dir}" encoding="UTF-8"
+               release="23" fork="true" executable="${jdk.javac}" includeantruntime="false">
+            <classpath><pathelement location="${classes.dir}"/><path refid="project.classpath"/></classpath>
+        </javac>
+        <java classname="br.com.debcontrol.test.TestRunner" fork="true" jvm="${jdk.java}" failonerror="true" dir="${basedir}">
+            <classpath><pathelement location="${classes.dir}"/><pathelement location="${test.classes.dir}"/></classpath>
+        </java>
+    </target>
+</project>

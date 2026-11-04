@@ -1,0 +1,12 @@
+/out/
+/.idea/
+*.iml
+config/database.local.properties
+*.log
+exportacoes/
+/build/
+/dist/
+/nbproject/private/
+/config/jdk.properties
+/config/database.properties
+/lib/*.jar
