@@ -18,6 +18,8 @@ public final class MessageBox {
         String message;
         if (exception instanceof RegraNegocioException || exception instanceof DatabaseException) {
             message = exception.getMessage();
+            // A tela mostra uma mensagem amigável; a causa técnica fica no console para diagnóstico.
+            if (exception.getCause() != null) exception.printStackTrace();
         } else {
             message = "Ocorreu um erro inesperado. Verifique os dados e tente novamente.";
             exception.printStackTrace();

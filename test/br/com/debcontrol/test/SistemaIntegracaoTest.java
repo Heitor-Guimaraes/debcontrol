@@ -73,12 +73,14 @@ public final class SistemaIntegracaoTest {
         Funcionario funcionario = new Funcionario();
         funcionario.setNome("Operador Integracao"); funcionario.setCargo("Caixa"); funcionario.setLogin("teste_integracao");
         funcionarios.salvar(funcionario, "SenhaTeste123");
-        ok(funcionarios.buscar(funcionario.getIdFuncionario()).getSenhaHash().length() == 64, "Funcionario persistido com hash de senha");
+        ok(br.com.debcontrol.util.SenhaUtil.verificar("SenhaTeste123", funcionarios.buscar(funcionario.getIdFuncionario()).getSenhaHash()), "Funcionario persistido com hash verificavel");
         funcionario.setNome("Operador Alterado"); funcionarios.salvar(funcionario, null);
         ok(funcionarios.listar("Alterado", true).size() == 1, "Alteracao e filtro de funcionario");
         FormaPagamento forma = new FormaPagamento(); forma.setNome("Teste dinheiro"); forma.setDescricao("Teste"); formas.salvar(forma);
         forma.setDescricao("Descricao alterada"); formas.salvar(forma);
         ok(formas.buscar(forma.getIdFormaPagamento()).getDescricao().equals("Descricao alterada"), "Cadastro, consulta e alteracao de forma de pagamento");
+        FormaPagamento formaRepetida = new FormaPagamento(); formaRepetida.setNome("teste dinheiro");
+        rejeita(() -> formas.salvar(formaRepetida), "Bloqueio de forma de pagamento repetida");
         long c = cliente.getIdCliente(), f = funcionario.getIdFuncionario(), p = forma.getIdFormaPagamento();
         var venda = financeiro.registrarVenda(c, f, valor("100"), HOJE, HOJE.plusDays(7), "Venda teste", null);
         long v = venda.getIdVenda();
@@ -101,6 +103,7 @@ public final class SistemaIntegracaoTest {
         var pendente = financeiro.registrarVenda(c, f, valor("50"), HOJE.minusDays(2), HOJE.minusDays(1), "Venda atrasada", null);
         long a = pendente.getIdVenda();
         ok(financeiro.listarVendas("Integracao", true).size() == 1, "Filtro de vendas pendentes");
+        moeda("50", financeiro.saldosClientes().get(c), "Saldo do cliente na consulta unica");
         ok(financeiro.buscarVenda(a).getStatus() == StatusVenda.ATRASADA, "Atualizacao de venda atrasada");
         cobrancas.registrar(a, f, HOJE, MeioContato.WHATSAPP, "Cliente avisado", HOJE.plusDays(1), "Teste");
         ok(cobrancas.listar("Integracao").size() == 1, "Cobranca gravada e consultada");
@@ -111,7 +114,7 @@ public final class SistemaIntegracaoTest {
         ok(relatorios.clientesDevedores().size() == 1 && relatorios.clientesDevedores().getFirst().possuiAtraso(), "Relatorio de devedores e atraso");
         moeda("100", relatorios.totalRecebido(HOJE, HOJE), "Recebimentos no periodo");
         rejeita(() -> relatorios.totalRecebido(HOJE, HOJE.minusDays(1)), "Bloqueio de periodo invalido");
-        Path csv = Path.of("docs/aula12/teste-devedores.csv");
+        Path csv = Path.of("build/test-output/teste-devedores.csv");
         relatorios.exportarClientesDevedores(csv);
         ok(Files.readAllLines(csv).size() == 2 && Files.readString(csv).contains(cliente.getNome()), "CSV exportado com cabecalho e cliente correto");
         ok(financeiro.extratoCliente(c).size() == 2, "Extrato do cliente com as duas vendas");
@@ -165,7 +168,7 @@ public final class SistemaIntegracaoTest {
                     var image = new java.awt.image.BufferedImage(1280, 760, java.awt.image.BufferedImage.TYPE_INT_RGB);
                     var graphics = image.createGraphics();
                     try { painel.printAll(graphics); } finally { graphics.dispose(); }
-                    Path folder = Path.of("docs/aula12/telas-validacao"); Files.createDirectories(folder);
+                    Path folder = Path.of("build/test-output/telas-validacao"); Files.createDirectories(folder);
                     javax.imageio.ImageIO.write(image, "png", folder.resolve(painel.getClass().getSimpleName() + ".png").toFile());
                     ok(true, painel.getClass().getSimpleName() + " carrega banco real e renderiza");
                 } catch (Exception e) { throw new AssertionError("Falha no painel " + painel.getClass().getSimpleName(), e); }

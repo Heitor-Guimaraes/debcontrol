@@ -76,10 +76,17 @@ public class FormaPagamentoDAO {
     }
 
     public Optional<FormaPagamento> buscarPorId(long id) {
-        String sql = "SELECT id_forma_pagamento, nome, descricao, ativo FROM forma_pagamento WHERE id_forma_pagamento=?";
+        return buscar("SELECT id_forma_pagamento, nome, descricao, ativo FROM forma_pagamento WHERE id_forma_pagamento=?", id);
+    }
+
+    public Optional<FormaPagamento> buscarPorNome(String nome) {
+        return buscar("SELECT id_forma_pagamento, nome, descricao, ativo FROM forma_pagamento WHERE nome=?", nome);
+    }
+
+    private Optional<FormaPagamento> buscar(String sql, Object parametro) {
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, id);
+            statement.setObject(1, parametro);
             try (ResultSet result = statement.executeQuery()) {
                 return result.next() ? Optional.of(mapear(result)) : Optional.empty();
             }

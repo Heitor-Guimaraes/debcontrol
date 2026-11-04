@@ -65,6 +65,7 @@ public class RelatoriosPanel extends JPanel {
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = chooser.getSelectedFile();
             if (!file.getName().toLowerCase().endsWith(".csv")) file = new File(file.getParentFile(), file.getName() + ".csv");
+            if (file.exists() && !MessageBox.confirm(this, "O arquivo " + file.getName() + " já existe. Deseja substituí-lo?")) return;
             try { service.exportarClientesDevedores(file.toPath()); MessageBox.success(this, "Relatório exportado com sucesso."); }
             catch (RuntimeException exception) { MessageBox.error(this, exception); }
         }

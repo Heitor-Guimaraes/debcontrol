@@ -46,9 +46,10 @@ public class ClientesPanel extends JPanel {
     public void atualizar() {
         try {
             clientes = service.listar(searchField.getText(), activeOnlyCheck.isSelected());
+            var saldos = financeiroService.saldosClientes();
             tableModel.setRowCount(0);
             for (Cliente cliente : clientes) {
-                var saldo = financeiroService.saldoCliente(cliente.getIdCliente());
+                var saldo = saldos.getOrDefault(cliente.getIdCliente(), java.math.BigDecimal.ZERO);
                 tableModel.addRow(new Object[]{cliente.getIdCliente(), cliente.getNome(), cliente.getCpf(), cliente.getTelefone(),
                         Formatador.moeda(saldo),
                         !cliente.isAtivo() ? "Inativo" : saldo.signum() > 0 ? "Devendo" : "Em dia"});

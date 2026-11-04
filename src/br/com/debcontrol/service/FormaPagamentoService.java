@@ -15,9 +15,14 @@ public class FormaPagamentoService {
     }
 
     public FormaPagamento salvar(FormaPagamento forma) {
-        forma.setNome(Validador.textoObrigatorio(forma.getNome(), "Nome").toUpperCase(java.util.Locale.ROOT));
-        forma.setNome(Validador.textoObrigatorio(forma.getNome(), "Nome", 40));
+        forma.setNome(Validador.textoObrigatorio(forma.getNome(), "Nome", 40).toUpperCase(java.util.Locale.ROOT));
         forma.setDescricao(Validador.textoOpcional(forma.getDescricao(), "Descrição", 150));
+        dao.buscarPorNome(forma.getNome()).ifPresent(existente -> {
+            if (forma.getIdFormaPagamento() == null
+                    || !existente.getIdFormaPagamento().equals(forma.getIdFormaPagamento())) {
+                throw new RegraNegocioException("Já existe uma forma de pagamento com este nome.");
+            }
+        });
         if (forma.getIdFormaPagamento() == null) {
             forma.setAtivo(true);
             return dao.inserir(forma);

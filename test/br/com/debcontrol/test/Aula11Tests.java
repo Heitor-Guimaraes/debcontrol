@@ -1,9 +1,20 @@
 package br.com.debcontrol.test;
 
 import br.com.debcontrol.dao.ClienteDAO;
+import br.com.debcontrol.dao.FormaPagamentoDAO;
+import br.com.debcontrol.dao.RelatorioDAO;
+import br.com.debcontrol.dto.ClienteResumo;
 import br.com.debcontrol.exception.RegraNegocioException;
 import br.com.debcontrol.model.Cliente;
+import br.com.debcontrol.model.FormaPagamento;
 import br.com.debcontrol.service.ClienteService;
+import br.com.debcontrol.service.FormaPagamentoService;
+import br.com.debcontrol.service.RelatorioService;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /** Testa a integração Service/DAO com armazenamento em memória, não SQL real. */
@@ -49,6 +60,52 @@ public final class Aula11Tests {
         Cliente c = new Cliente();
         c.setNome("Teste"); c.setCpf("52998224725"); c.setTelefone("abc");
         rejeita(() -> new ClienteService(new ClienteDAO()).salvar(c));
+    }
+
+    public static void cpfInvalido() {
+        Cliente c = new Cliente();
+        c.setNome("Teste"); c.setCpf("529.982.247-24"); c.setTelefone("11999999999");
+        rejeita(() -> new ClienteService(new ClienteDAO()).salvar(c));
+    }
+
+    public static void formaPagamentoDuplicada() {
+        FormaPagamento existente = new FormaPagamento();
+        existente.setIdFormaPagamento(1L);
+        existente.setNome("PIX");
+        FormaPagamentoService service = new FormaPagamentoService(new FormaPagamentoDAO() {
+            public Optional<FormaPagamento> buscarPorNome(String nome) {
+                return "PIX".equals(nome) ? Optional.of(existente) : Optional.empty();
+            }
+            public void atualizar(FormaPagamento forma) { }
+        });
+        FormaPagamento nova = new FormaPagamento();
+        nova.setNome("pix");
+        rejeita(() -> service.salvar(nova));
+        service.salvar(existente);
+    }
+
+    public static void csvSeguro() {
+        RelatorioService service = new RelatorioService(new RelatorioDAO() {
+            public List<ClienteResumo> listarClientesDevedores() {
+                return List.of(
+                        new ClienteResumo(1, "Souza; \"Ana\"", "11999999999", new BigDecimal("1234.5"), true),
+                        new ClienteResumo(2, "=1+1", null, new BigDecimal("10.00"), false));
+            }
+        });
+        try {
+            Path arquivo = Files.createTempFile("debcontrol-teste", ".csv");
+            try {
+                service.exportarClientesDevedores(arquivo);
+                List<String> linhas = Files.readAllLines(arquivo, StandardCharsets.UTF_8);
+                check(linhas.get(0).startsWith("\uFEFFCliente;"));
+                check(linhas.get(1).equals("\"Souza; \"\"Ana\"\"\";11999999999;1234,50;Sim"));
+                check(linhas.get(2).equals("'=1+1;;10,00;Não"));
+            } finally {
+                Files.deleteIfExists(arquivo);
+            }
+        } catch (IOException exception) {
+            throw new AssertionError("Falha ao exportar o CSV", exception);
+        }
     }
 
     private static void rejeita(Runnable action) {

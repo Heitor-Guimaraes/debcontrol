@@ -8,7 +8,9 @@ import br.com.debcontrol.model.VendaFiada;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class VendaFiadaDAO {
@@ -61,27 +63,27 @@ public class VendaFiadaDAO {
 
     public Optional<VendaFiada> buscarPorId(long idVenda) {
         try (Connection connection = ConnectionFactory.getConnection()) {
-            return buscarPorId(connection, idVenda);
+            return consultarPorId(connection, idVenda);
         } catch (SQLException exception) {
             throw new DatabaseException("Erro ao buscar a venda.", exception);
         }
     }
 
-    public Optional<VendaFiada> buscarPorId(Connection connection, long idVenda) {
-        // Serializa pagamentos da mesma venda antes de consultar o saldo agregado.
-        try {
-            if (!connection.getAutoCommit()) {
-                try (PreparedStatement lock = connection.prepareStatement(
-                        "SELECT id_venda FROM venda_fiada WHERE id_venda = ? FOR UPDATE")) {
-                    lock.setLong(1, idVenda);
-                    try (ResultSet row = lock.executeQuery()) {
-                        if (!row.next()) return Optional.empty();
-                    }
-                }
+    /** Bloqueia a venda até o fim da transação, serializando pagamentos antes de consultar o saldo. */
+    public Optional<VendaFiada> buscarParaPagamento(Connection connection, long idVenda) {
+        try (PreparedStatement lock = connection.prepareStatement(
+                "SELECT id_venda FROM venda_fiada WHERE id_venda = ? FOR UPDATE")) {
+            lock.setLong(1, idVenda);
+            try (ResultSet row = lock.executeQuery()) {
+                if (!row.next()) return Optional.empty();
             }
         } catch (SQLException exception) {
             throw new DatabaseException("Erro ao bloquear a venda para pagamento.", exception);
         }
+        return consultarPorId(connection, idVenda);
+    }
+
+    private Optional<VendaFiada> consultarPorId(Connection connection, long idVenda) {
         String sql = SELECT_BASE + " WHERE v.id_venda = ? " + GROUP_ORDER;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, idVenda);
@@ -143,6 +145,20 @@ public class VendaFiadaDAO {
             }
         } catch (SQLException exception) {
             throw new DatabaseException("Erro ao calcular o saldo do cliente.", exception);
+        }
+    }
+
+    /** Consulta única para telas que exibem o saldo de vários clientes. */
+    public Map<Long, BigDecimal> listarSaldosClientes() {
+        Map<Long, BigDecimal> saldos = new HashMap<>();
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT id_cliente, saldo_devedor FROM vw_saldo_cliente");
+             ResultSet result = statement.executeQuery()) {
+            while (result.next()) saldos.put(result.getLong("id_cliente"), result.getBigDecimal("saldo_devedor"));
+            return saldos;
+        } catch (SQLException exception) {
+            throw new DatabaseException("Erro ao calcular os saldos dos clientes.", exception);
         }
     }
 

@@ -76,7 +76,7 @@ public class FuncionariosPanel extends JPanel {
         deleteButton.setToolTipText("Exclusão definitiva somente para cadastros sem histórico");
         deleteButton.addActionListener(event -> excluirSelecionado());
         newButton.addActionListener(event -> abrir(null));
-        editButton.addActionListener(event -> abrir(selecionado()));
+        editButton.addActionListener(event -> editarSelecionado());
         deactivateButton.addActionListener(event -> desativar());
         searchButton.addActionListener(event -> atualizar());
         searchField.addActionListener(event -> atualizar());
@@ -87,6 +87,12 @@ public class FuncionariosPanel extends JPanel {
         int row = table.getSelectedRow();
         if (row < 0) throw new RegraNegocioException("Selecione um funcionário.");
         return funcionarios.get(table.convertRowIndexToModel(row));
+    }
+
+    private void editarSelecionado() {
+        // Edita uma cópia nova: cancelar o formulário não altera o objeto exibido na lista.
+        try { abrir(service.buscar(selecionado().getIdFuncionario())); }
+        catch (RuntimeException exception) { MessageBox.error(this, exception); }
     }
 
     private void abrir(Funcionario funcionario) {

@@ -4,10 +4,10 @@ import br.com.debcontrol.dao.RelatorioDAO;
 import br.com.debcontrol.dto.ClienteResumo;
 import br.com.debcontrol.dto.DashboardResumo;
 import br.com.debcontrol.exception.RegraNegocioException;
-import br.com.debcontrol.util.Formatador;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,10 +40,11 @@ public class RelatorioService {
 
     public void exportarClientesDevedores(Path arquivo) {
         List<String> linhas = new ArrayList<>();
-        linhas.add("Cliente;Telefone;Saldo devedor;Atrasado");
+        // A marca BOM faz o Excel reconhecer UTF-8 e exibir os acentos corretamente.
+        linhas.add("\uFEFFCliente;Telefone;Saldo devedor (R$);Atrasado");
         for (ClienteResumo item : clientesDevedores()) {
             linhas.add(csv(item.nome()) + ";" + csv(item.telefone()) + ";"
-                    + Formatador.moeda(item.saldoDevedor()) + ";" + (item.possuiAtraso() ? "Sim" : "Não"));
+                    + decimal(item.saldoDevedor()) + ";" + (item.possuiAtraso() ? "Sim" : "Não"));
         }
         try {
             Path parent = arquivo.toAbsolutePath().getParent();
@@ -55,8 +56,18 @@ public class RelatorioService {
         }
     }
 
+    /** Valor numérico sem símbolo de moeda, para que a planilha consiga somar a coluna. */
+    private String decimal(BigDecimal value) {
+        return value.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ',');
+    }
+
     private String csv(String value) {
         if (value == null) return "";
-        return value.replace(";", ",").replace("\n", " ");
+        // Texto iniciado por estes caracteres seria interpretado como fórmula pela planilha.
+        String text = value.matches("(?s)^[=+\\-@\t\r].*") ? "'" + value : value;
+        if (text.contains(";") || text.contains("\"") || text.contains("\n") || text.contains("\r")) {
+            return "\"" + text.replace("\"", "\"\"") + "\"";
+        }
+        return text;
     }
 }

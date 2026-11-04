@@ -47,7 +47,27 @@ public final class TestRunner {
             venda.setDataVencimento(LocalDate.now().minusDays(1));
             verdadeiro(venda.isAtrasada());
         });
-        testar("hash de senha usa SHA-256", () -> igual(64, SenhaUtil.hash("Senha123").length()));
+        testar("hash de senha usa PBKDF2 com sal e é verificável", () -> {
+            String primeiro = SenhaUtil.hash("Senha123");
+            verdadeiro(primeiro.startsWith("pbkdf2-sha256$"));
+            falso(primeiro.equals(SenhaUtil.hash("Senha123")));
+            verdadeiro(SenhaUtil.verificar("Senha123", primeiro));
+            falso(SenhaUtil.verificar("Senha124", primeiro));
+        });
+        testar("hash SHA-256 antigo continua verificável", () -> {
+            String antigo = "c00357563669ed21c34e13687cad669038eb88a2831fc8109b40ddc62f63e934";
+            verdadeiro(SenhaUtil.verificar("Senha123", antigo));
+            falso(SenhaUtil.verificar("Senha456", antigo));
+            falso(SenhaUtil.verificar("Senha123", "formato-desconhecido"));
+        });
+        testar("senha curta é rejeitada", () -> rejeita(() -> SenhaUtil.hash("1234567")));
+        testar("CPF com dígitos corretos é aceito", () -> verdadeiro(Validador.cpfValido("52998224725")));
+        testar("CPF inválido é rejeitado", () -> {
+            falso(Validador.cpfValido("52998224724"));
+            falso(Validador.cpfValido("11111111111"));
+            falso(Validador.cpfValido("123"));
+            falso(Validador.cpfValido(null));
+        });
         testar("data impossível é rejeitada", () -> rejeita(() -> Formatador.parseData("31/02/2026", "Data")));
         testar("data nula é rejeitada", () -> rejeita(() -> Formatador.parseData(null, "Data")));
         testar("data de ano bissexto é aceita", () -> igual(LocalDate.of(2024, 2, 29),
@@ -138,6 +158,9 @@ public final class TestRunner {
         testar("CRUD e CPF duplicado na camada service com DAO em memória", Aula11Tests::crudService);
         testar("exclusão bloqueada quando DAO informa histórico", Aula11Tests::exclusaoProtegida);
         testar("telefone sem números é rejeitado", Aula11Tests::telefoneInvalido);
+        testar("CPF inválido é bloqueado na camada service", Aula11Tests::cpfInvalido);
+        testar("forma de pagamento com nome repetido é bloqueada", Aula11Tests::formaPagamentoDuplicada);
+        testar("CSV protege separador, aspas, fórmulas e acentos", Aula11Tests::csvSeguro);
         testar("campo acima do limite é rejeitado", () -> rejeita(() -> Validador.textoObrigatorio("A".repeat(121), "Nome", 120)));
         testar("valor com fração de centavo é rejeitado", () -> rejeita(() -> Validador.valorMonetario(new BigDecimal("0.001"))));
         testar("valor acima do DECIMAL é rejeitado", () -> rejeita(() -> Validador.valorMonetario(new BigDecimal("100000000.00"))));

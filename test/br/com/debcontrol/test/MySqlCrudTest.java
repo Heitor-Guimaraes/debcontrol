@@ -4,6 +4,7 @@ import br.com.debcontrol.config.ConnectionFactory;
 import br.com.debcontrol.dao.ClienteDAO;
 import br.com.debcontrol.model.Cliente;
 import br.com.debcontrol.service.ClienteService;
+import br.com.debcontrol.util.Validador;
 import java.security.SecureRandom;
 
 /** Teste opcional: grava e remove apenas um cliente fictício no MySQL configurado. */
@@ -18,7 +19,7 @@ public final class MySqlCrudTest {
         String cpf;
         do {
             cpf = String.format(java.util.Locale.ROOT, "%011d", random.nextLong(100_000_000_000L));
-        } while (dao.buscarPorCpf(cpf).isPresent());
+        } while (!Validador.cpfValido(cpf) || dao.buscarPorCpf(cpf).isPresent());
         cliente.setNome("TESTE INTEGRACAO " + cpf);
         cliente.setCpf(cpf);
         cliente.setTelefone("11999999999");

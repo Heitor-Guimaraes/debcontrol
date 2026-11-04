@@ -16,6 +16,15 @@ public final class Main {
             br.com.debcontrol.ui.terminal.TerminalApp.main(args);
             return;
         }
+        // Erros não tratados em ações de botão viram mensagem, em vez de falhar sem aviso ao usuário.
+        Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
+            if (java.awt.GraphicsEnvironment.isHeadless()) {
+                error.printStackTrace();
+                return;
+            }
+            SwingUtilities.invokeLater(() -> MessageBox.error(null,
+                    error instanceof RuntimeException runtime ? runtime : new RuntimeException(error)));
+        });
         UiTheme.install();
         SwingUtilities.invokeLater(() -> {
             try {

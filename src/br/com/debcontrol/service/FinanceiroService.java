@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public class FinanceiroService {
     private final ClienteDAO clienteDAO;
@@ -40,9 +41,6 @@ public class FinanceiroService {
                 .orElseThrow(() -> new RegraNegocioException("Funcionário não encontrado."));
         if (!cliente.isAtivo()) throw new RegraNegocioException("O cliente está desativado.");
         if (!funcionario.isAtivo()) throw new RegraNegocioException("O funcionário está desativado.");
-        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RegraNegocioException("O valor da venda deve ser maior que zero.");
-        }
         if (dataVenda == null || vencimento == null) {
             throw new RegraNegocioException("As datas da venda e do vencimento são obrigatórias.");
         }
@@ -72,9 +70,6 @@ public class FinanceiroService {
     public Pagamento registrarPagamento(long idVenda, long idFuncionario, long idFormaPagamento,
                                          BigDecimal valor, LocalDate data, String observacao) {
         Validador.valorMonetario(valor);
-        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RegraNegocioException("O pagamento deve ser maior que zero.");
-        }
         if (data == null || data.isAfter(LocalDate.now())) {
             throw new RegraNegocioException("A data do pagamento não pode estar no futuro.");
         }
@@ -88,7 +83,7 @@ public class FinanceiroService {
         try (Connection connection = ConnectionFactory.getConnection()) {
             connection.setAutoCommit(false);
             try {
-                VendaFiada venda = vendaDAO.buscarPorId(connection, idVenda)
+                VendaFiada venda = vendaDAO.buscarParaPagamento(connection, idVenda)
                         .orElseThrow(() -> new RegraNegocioException("Venda não encontrada."));
                 if (!(venda.getStatus() == StatusVenda.ABERTA
                         || venda.getStatus() == StatusVenda.PARCIAL
@@ -158,6 +153,10 @@ public class FinanceiroService {
 
     public List<Pagamento> listarPagamentos(String filtro) {
         return pagamentoDAO.listar(filtro);
+    }
+
+    public Map<Long, BigDecimal> saldosClientes() {
+        return vendaDAO.listarSaldosClientes();
     }
 
     public BigDecimal saldoCliente(long idCliente) {

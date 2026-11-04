@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 public final class DatabaseConfig {
-    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/mercado_fiado?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/mercado_fiado?useSSL=false&allowPublicKeyRetrieval=true&connectTimeout=5000";
     private static final String DEFAULT_USER = "root";
     private static final Path CONFIG_PATH = Path.of("config", "database.properties");
 
@@ -44,7 +44,9 @@ public final class DatabaseConfig {
         if (environmentValue != null && !environmentValue.isBlank()) {
             return environmentValue;
         }
-        return properties.getProperty(key, defaultValue).trim();
+        String value = properties.getProperty(key, defaultValue);
+        // Espaços podem fazer parte da senha; os demais parâmetros são normalizados.
+        return "db.password".equals(key) ? value : value.trim();
     }
 
     public String url() { return url; }

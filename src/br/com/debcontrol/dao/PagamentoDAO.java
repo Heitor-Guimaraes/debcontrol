@@ -4,7 +4,6 @@ import br.com.debcontrol.config.ConnectionFactory;
 import br.com.debcontrol.exception.DatabaseException;
 import br.com.debcontrol.model.Pagamento;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,19 +61,6 @@ public class PagamentoDAO {
             return pagamentos;
         } catch (SQLException exception) {
             throw new DatabaseException("Erro ao consultar os pagamentos.", exception);
-        }
-    }
-
-    public BigDecimal calcularTotalPago(Connection connection, long idVenda) {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT COALESCE(SUM(valor_pago), 0) FROM pagamento WHERE id_venda = ?")) {
-            statement.setLong(1, idVenda);
-            try (ResultSet result = statement.executeQuery()) {
-                result.next();
-                return result.getBigDecimal(1);
-            }
-        } catch (SQLException exception) {
-            throw new DatabaseException("Erro ao calcular os pagamentos da venda.", exception);
         }
     }
 

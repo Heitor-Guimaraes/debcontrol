@@ -16,7 +16,7 @@ public final class InterfaceIntegracaoTest {
     private static int checks;
     private static MainFrame frame;
     private static AppContext app;
-    private static final Path PASTA = Path.of("docs/aula12/testes-interface");
+    private static final Path PASTA = Path.of("build/test-output/testes-interface");
 
     public static void main(String[] args) throws Exception {
         Thread watchdog = new Thread(() -> {

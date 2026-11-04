@@ -22,6 +22,9 @@ public class ClienteService {
         if (cliente.getCpf() == null || cliente.getCpf().length() != 11) {
             throw new RegraNegocioException("O CPF deve conter 11 números.");
         }
+        if (!Validador.cpfValido(cliente.getCpf())) {
+            throw new RegraNegocioException("CPF inválido. Confira os dígitos informados.");
+        }
         if (cliente.getTelefone() == null || !cliente.getTelefone().matches("[0-9]{10,13}")) {
             throw new RegraNegocioException("Informe um telefone com DDD, contendo de 10 a 13 números.");
         }

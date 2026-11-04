@@ -49,6 +49,10 @@ public class FuncionarioDialog extends JDialog {
         nameField.setText(funcionario.getNome());
         roleField.setText(funcionario.getCargo());
         loginField.setText(funcionario.getLogin());
+        if (funcionario.getIdFuncionario() != null) {
+            passwordLabel.setText("Nova senha (opcional)");
+            passwordField.setToolTipText("Deixe em branco para manter a senha atual");
+        }
     }
 
     private void salvar() {
