@@ -41,7 +41,7 @@ Revisão de 04/11/2026 de todo o código, SQL, scripts e documentação. As rest
 - **Scripts:** a compilação estava repetida em quatro `.bat` e agora fica em `compilar.bat`, com `--release 23`. `testar.bat` escondia o código de saída com `pause` e agora o preserva.
 - **Testes:** os de integração sobrescreviam as evidências em `docs/aula12` a cada execução. Agora usam `build/test-output`. Foram adicionados casos para senhas, CPF, CSV e nome repetido (de 28 para 35 testes locais).
 - **Documentação:** os textos pediam JDK 25, mas o projeto compila com JDK 23+. Os roteiros, o guia e o formulário técnico foram alinhados, e o README foi reescrito.
-- **Repositório:** foram adicionados `.gitattributes` e CI no GitHub Actions, com testes no MySQL 8.
+- **Repositório:** foi adicionado `.gitattributes`.
 
 ## Atenção ao usar
 

@@ -26,7 +26,7 @@ No NetBeans, use **File > Open Project** e selecione esta pasta. Detalhes em [GU
 | `testar-sistema.bat` | Fluxo financeiro completo em um banco temporário, removido ao final | Sim |
 | `testar-sistema.bat --gui` | O mesmo, acionando os botões reais das telas | Sim, e monitor |
 
-Os arquivos gerados pelos testes ficam em `build/test-output`. O CI executa `testar.bat` e o teste de sistema em cada push: [.github/workflows/ci.yml](.github/workflows/ci.yml).
+Os arquivos gerados pelos testes ficam em `build/test-output`.
 
 ## Estrutura
 
@@ -38,10 +38,8 @@ Pacotes e convenções em [ESTRUTURA-DO-PROJETO.md](ESTRUTURA-DO-PROJETO.md) e m
 
 ## Documentos
 
+- [Guia do projeto](GUIA-DO-PROJETO.md)
 - [Análise do projeto e melhorias aplicadas](docs/ANALISE-E-MELHORIAS.md)
-- [Roteiro da Aula 11](AULA11-ENTREGA.md) e [da Aula 12](AULA12-TERMINAL.md)
-- [Formulário técnico](docs/aula12/FORMULARIO-TECNICO.md)
-- `docs/aula11` e `docs/aula12` guardam as evidências das entregas, como foram geradas em 28/10/2026.
 
 ## Limitações conhecidas
 
