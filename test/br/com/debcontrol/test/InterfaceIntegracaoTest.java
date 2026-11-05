@@ -36,6 +36,11 @@ public final class InterfaceIntegracaoTest {
     }
 
     private static void executar() {
+        modal(() -> click(frame,"connectionButton"),JDialog.class,d -> {
+            String mensagem = String.valueOf(buscar(d,JOptionPane.class).getMessage());
+            ok(mensagem.contains("sucesso") && mensagem.contains("Banco:"),"Botao Testar conexao informa servidor e banco");
+            foto(d,"00-teste-conexao.png"); d.dispose();
+        });
         Object clientes = navegar("clientsButton", "clientesPanel");
         modal(() -> click(clientes, "newButton"), ClienteDialog.class, d -> {
             texto(d,"nameField","Cliente Interface"); texto(d,"cpfField","52998224725");
@@ -50,7 +55,21 @@ public final class InterfaceIntegracaoTest {
         ok(app.clienteService().listar("Editado",true).size()==1,"Editar cliente atualiza banco e tabela");
         modal(() -> click(clientes,"newButton"),ClienteDialog.class,d -> click(d,"cancelButton"));
         ok(app.clienteService().listar("",false).size()==1,"Cancelar formulario nao grava cliente");
+        modal(() -> click(clientes,"newButton"),ClienteDialog.class,d -> {
+            texto(d,"nameField","Zeta Excluir"); texto(d,"cpfField","12345678909");
+            texto(d,"phoneField","11988888888"); click(d,"saveButton");
+        });
+        ((JTable)campo(clientes,"table")).setRowSelectionInterval(1,1);
+        modal(() -> click(clientes,"deleteButton"),JDialog.class,d -> {
+            fecharSucesso();
+            buscar(d,JOptionPane.class).setValue(JOptionPane.YES_OPTION);
+        });
+        ok(app.clienteService().listar("Zeta",false).isEmpty(),"Excluir pelo botao remove o cliente do banco");
         Object funcionarios = navegar("employeesButton","funcionariosPanel");
+        modal(() -> click(funcionarios,"editButton"),JDialog.class,d -> {
+            ok(String.valueOf(buscar(d,JOptionPane.class).getMessage()).contains("Selecione"),"Editar sem selecao mostra mensagem");
+            d.dispose();
+        });
         modal(() -> click(funcionarios,"newButton"),FuncionarioDialog.class,d -> {
             texto(d,"nameField","Operador Interface"); texto(d,"roleField","Caixa");
             texto(d,"loginField","operador_ui"); texto(d,"passwordField","Teste123"); click(d,"saveButton");
@@ -93,12 +112,7 @@ public final class InterfaceIntegracaoTest {
             JFileChooser chooser = buscar(d,JFileChooser.class);
             if (chooser==null) throw new AssertionError("Seletor de arquivo nao abriu");
             chooser.setSelectedFile(csv.toFile());
-            javax.swing.Timer fecharSucesso = new javax.swing.Timer(200,e -> {
-                for(Window w:Window.getWindows()) if(w instanceof JDialog j && j.isShowing() && j.getTitle().equals("Sucesso")) {
-                    j.dispose(); ((javax.swing.Timer)e.getSource()).stop();
-                }
-            });
-            fecharSucesso.start();
+            fecharSucesso();
             chooser.approveSelection();
         });
         ok(Files.exists(csv),"Exportar abre seletor e grava CSV pelo botao");
@@ -110,6 +124,14 @@ public final class InterfaceIntegracaoTest {
                 ok(botao.getActionListeners().length>0,painel.getClass().getSimpleName()+"."+field.getName()+" tem acao conectada");
             }
         }
+    }
+    private static void fecharSucesso() {
+        javax.swing.Timer timer = new javax.swing.Timer(200,e -> {
+            for(Window w:Window.getWindows()) if(w instanceof JDialog j && j.isShowing() && "Sucesso".equals(j.getTitle())) {
+                j.dispose(); ((javax.swing.Timer)e.getSource()).stop();
+            }
+        });
+        timer.start();
     }
     private static Object navegar(String botao,String painel) { click(frame,botao); return campo(frame,painel); }
     private static Object campo(Object obj,String nome) {

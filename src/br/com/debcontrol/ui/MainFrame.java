@@ -1,6 +1,7 @@
 package br.com.debcontrol.ui;
 
 import br.com.debcontrol.AppContext;
+import br.com.debcontrol.config.ConnectionFactory;
 import br.com.debcontrol.ui.components.MessageBox;
 import br.com.debcontrol.ui.components.ScrollablePanel;
 import br.com.debcontrol.ui.panels.*;
@@ -48,9 +49,20 @@ public class MainFrame extends JFrame {
         brandSubtitle.setForeground(new Color(148, 163, 184));
         navPanel.setOpaque(false);
         sidebarPanel.setPreferredSize(null);
-        JScrollPane navigationScroll = scrollArea(sidebarPanel, 220, 570);
+        UiTheme.styleSecondaryButton(connectionButton);
+        connectionButton.setToolTipText("Verifica a conexão com o banco de dados");
+        connectionButton.addActionListener(event -> testarConexao());
+        JScrollPane navigationScroll = scrollArea(sidebarPanel, 220, 640);
         navigationScroll.setPreferredSize(new Dimension(250, 0));
         add(navigationScroll, BorderLayout.WEST);
+    }
+
+    private void testarConexao() {
+        try {
+            MessageBox.success(this, ConnectionFactory.descreverConexao());
+        } catch (RuntimeException exception) {
+            MessageBox.error(this, exception);
+        }
     }
 
     private JScrollPane scrollArea(JComponent content, int width, int height) {
@@ -140,7 +152,7 @@ public class MainFrame extends JFrame {
         employeesButton = new JButton("Funcionários"); paymentMethodsButton = new JButton("Formas de pagamento");
         salesButton = new JButton("Vendas fiadas"); paymentsButton = new JButton("Pagamentos");
         collectionsButton = new JButton("Cobranças");
-        reportsButton = new JButton("Relatórios"); contentPanel = new JPanel();
+        reportsButton = new JButton("Relatórios"); connectionButton = new JButton("Testar conexão"); contentPanel = new JPanel();
 
         setLayout(new BorderLayout());
         sidebarPanel.setPreferredSize(new Dimension(250, 0));
@@ -158,6 +170,7 @@ public class MainFrame extends JFrame {
         navPanel.add(Box.createVerticalStrut(6)); navPanel.add(collectionsButton);
         navPanel.add(Box.createVerticalStrut(6)); navPanel.add(reportsButton);
         sidebarPanel.add(navPanel, BorderLayout.CENTER);
+        sidebarPanel.add(connectionButton, BorderLayout.SOUTH);
         add(sidebarPanel, BorderLayout.WEST);
         contentPanel.setLayout(new CardLayout()); add(contentPanel, BorderLayout.CENTER);
         sidebarPanel.setBackground(new java.awt.Color(23, 43, 77));
@@ -198,6 +211,7 @@ public class MainFrame extends JFrame {
     private JButton paymentsButton;
     private JButton collectionsButton;
     private JButton reportsButton;
+    private JButton connectionButton;
     private JPanel contentPanel;
     // End of variables declaration//GEN-END:variables
 }

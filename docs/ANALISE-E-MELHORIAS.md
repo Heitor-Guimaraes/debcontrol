@@ -1,6 +1,6 @@
 # Análise do projeto e melhorias aplicadas
 
-Revisão de 04/11/2026 de todo o código, SQL, scripts e documentação. As restrições da disciplina foram mantidas: Java puro, Swing, JDBC, sem frameworks e com os formulários do NetBeans intactos (nenhum `.form` ou bloco `GEN-BEGIN`/`GEN-END` foi alterado).
+Revisão de 04/11/2026 de todo o código, SQL, scripts e documentação. As restrições da disciplina foram mantidas: Java puro, Swing, JDBC, sem frameworks e com os formulários do NetBeans intactos (o único `.form` alterado foi `MainFrame`, para incluir o botão **Testar conexão**, atualizado junto com o `.java`).
 
 ## Corrigido
 

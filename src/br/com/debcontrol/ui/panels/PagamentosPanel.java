@@ -67,6 +67,9 @@ public class PagamentosPanel extends JPanel {
         setBackground(UiTheme.BACKGROUND); setBorder(new EmptyBorder(24, 24, 24, 24));
         debtsTable.setModel(debtsModel); paymentsTable.setModel(paymentsModel);
         UiTheme.styleTable(debtsTable); UiTheme.styleTable(paymentsTable);
+        // Sem este limite, cada tabela pede 400 px de altura e o histórico fica fora da área visível.
+        debtsScroll.setPreferredSize(new Dimension(400, 150));
+        paymentsScroll.setPreferredSize(new Dimension(400, 150));
         UiTheme.stylePrimaryButton(payButton); UiTheme.styleSecondaryButton(searchButton);
         payButton.addActionListener(event -> pagar()); searchButton.addActionListener(event -> atualizar());
         searchField.addActionListener(event -> atualizar());

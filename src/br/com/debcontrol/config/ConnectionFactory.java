@@ -34,6 +34,24 @@ public final class ConnectionFactory {
         return config;
     }
 
+    /** Teste usado pela interface gráfica: informa o servidor, o banco e o tempo de resposta, sem expor a senha. */
+    public static String descreverConexao() {
+        long inicio = System.nanoTime();
+        try (Connection connection = getConnection()) {
+            if (!connection.isValid(3)) {
+                throw new DatabaseException("A conexão com o MySQL não está válida.", null);
+            }
+            var dados = connection.getMetaData();
+            long tempo = (System.nanoTime() - inicio) / 1_000_000;
+            return "Conexão realizada com sucesso."
+                    + "\nServidor: " + dados.getDatabaseProductName() + " " + dados.getDatabaseProductVersion()
+                    + "\nBanco: " + connection.getCatalog()
+                    + "\nTempo de resposta: " + tempo + " ms";
+        } catch (SQLException exception) {
+            throw new DatabaseException("Erro ao validar a conexão com o MySQL.", exception);
+        }
+    }
+
     public static void testConnection() {
         try (Connection connection = getConnection()) {
             if (!connection.isValid(3)) {
