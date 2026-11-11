@@ -40,6 +40,7 @@ Pacotes e convenções em [ESTRUTURA-DO-PROJETO.md](ESTRUTURA-DO-PROJETO.md) e m
 
 - [Guia do projeto](GUIA-DO-PROJETO.md)
 - [Análise do projeto e melhorias aplicadas](docs/ANALISE-E-MELHORIAS.md)
+- [Roteiro do vídeo demonstrativo](ROTEIRO-VIDEO.md)
 
 ## Limitações conhecidas
 
